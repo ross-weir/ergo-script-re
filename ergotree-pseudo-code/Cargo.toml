@@ -1,0 +1,14 @@
+[package]
+name = "ergotree-pseudo-code"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ergotree-ir = "0.21.1"
+thiserror = "1.0.37"
+
+[dev-dependencies]
+base16 = "0.2.1"
+pretty_assertions = "1.3.0"
