@@ -1,3 +1,4 @@
+
 ## ergotree-pseudo-code
 
 Pseudo code generator for compiled ergo trees. Attempts to create pseudo code roughly representing the ergo script that produced the tree. In some cases it can produce a script that is the equivilent (pseudo code compiles to the same ergo tree) but this is on a best effort basis.
@@ -25,6 +26,8 @@ Pseudo code of the compiled ergo tree:
 }
 ```
 
+---
+
 Original script:
 
 ```
@@ -40,6 +43,8 @@ Pseudo code of the compiled ergo tree:
 ```
 OUTPUTS.getOrElse(0, SELF).tokens(0)._2 > 0
 ```
+
+---
 
 Original script:
 
