@@ -1,4 +1,4 @@
-use ergotree_ir::mir::block::BlockValue;
+use ergotree_ir::mir::{block::BlockValue, expr::Expr};
 
 use crate::{
     error::PseudoCodeError,
@@ -7,15 +7,29 @@ use crate::{
 };
 
 impl PseudoCode for BlockValue {
-    fn pseudo_code(&self, ctx: &GeneratorContext) -> Result<String, PseudoCodeError> {
+    fn pseudo_code<'a>(
+        &'a self,
+        ctx: &mut GeneratorContext,
+        stack: &mut Vec<&'a Expr>,
+    ) -> Result<String, PseudoCodeError> {
+        // TODO: doc why this must come before stmts
+        let result_code = self.result.pseudo_code(ctx, stack)?;
+
         let stmts: Vec<String> = self
             .items
             .iter()
-            .map(|e| e.pseudo_code(ctx).unwrap())
+            .map(|e| e.pseudo_code(ctx, stack).unwrap())
             .collect();
+        let mut pseudo_vars = ctx
+            .pseudo_var_decls
+            .drain(..)
+            .collect::<Vec<_>>()
+            .join("\n\t");
+        if pseudo_vars.len() > 0 {
+            pseudo_vars.insert_str(0, "\n\t");
+        }
         let stmts_code = stmts.join("\n\t");
-        let result_code = self.result.pseudo_code(ctx)?;
-        let code = format!("{{\n\t{stmts_code}\n\n\t{result_code}\n}}");
+        let code = format!("{{\n\t{stmts_code}{pseudo_vars}\n\n\t{result_code}\n}}");
 
         Ok(code)
     }

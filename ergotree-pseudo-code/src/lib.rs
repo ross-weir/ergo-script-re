@@ -12,6 +12,7 @@ pub mod visitor;
 pub struct GeneratorContext {
     pub tree: ErgoTree,
     pub dfa: DataFlowAnalyzer,
+    pub pseudo_var_decls: Vec<String>,
 }
 
 impl GeneratorContext {
@@ -19,6 +20,7 @@ impl GeneratorContext {
         Self {
             tree,
             dfa: Default::default(),
+            pseudo_var_decls: vec![],
         }
     }
 
@@ -28,12 +30,17 @@ impl GeneratorContext {
         Self {
             tree,
             dfa: Default::default(),
+            pseudo_var_decls: vec![],
         }
     }
 }
 
 pub trait PseudoCode {
-    fn pseudo_code(&self, ctx: &GeneratorContext) -> Result<String, PseudoCodeError>;
+    fn pseudo_code<'a>(
+        &'a self,
+        ctx: &mut GeneratorContext,
+        stack: &mut Vec<&'a Expr>,
+    ) -> Result<String, PseudoCodeError>;
 }
 
 /// Converts Self to its ErgoScript equivilence.

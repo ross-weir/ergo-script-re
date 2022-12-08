@@ -7,7 +7,11 @@ use crate::{
 };
 
 impl PseudoCode for BinOp {
-    fn pseudo_code(&self, ctx: &GeneratorContext) -> Result<String, PseudoCodeError> {
+    fn pseudo_code<'a>(
+        &'a self,
+        ctx: &mut GeneratorContext,
+        stack: &mut Vec<&'a Expr>,
+    ) -> Result<String, PseudoCodeError> {
         // TODO: this should probably have a ToString impl in ergotree_ir instead of this match statement
         let op = match self.kind {
             ergotree_ir::mir::bin_op::BinOpKind::Arith(e) => match e {
@@ -40,16 +44,16 @@ impl PseudoCode for BinOp {
         };
         let left = &*self.left;
         let left_code = if let Expr::BinOp(_) = left {
-            format!("({})", left.pseudo_code(ctx)?)
+            format!("({})", left.pseudo_code(ctx, stack)?)
         } else {
-            left.pseudo_code(ctx)?
+            left.pseudo_code(ctx, stack)?
         };
 
         let right = &*self.right;
         let right_code = if let Expr::BinOp(_) = right {
-            format!("({})", right.pseudo_code(ctx)?)
+            format!("({})", right.pseudo_code(ctx, stack)?)
         } else {
-            right.pseudo_code(ctx)?
+            right.pseudo_code(ctx, stack)?
         };
 
         Ok(format!("{left_code} {op} {right_code}").to_string())
@@ -81,8 +85,11 @@ mod tests {
             right: Box::new(right),
         }
         .into();
-        let ctx = GeneratorContext::from_expr(expr.clone());
+        let mut ctx = GeneratorContext::from_expr(expr.clone());
 
-        assert_eq!(expr.pseudo_code(&ctx).unwrap(), "true && false")
+        assert_eq!(
+            expr.pseudo_code(&mut ctx, &mut vec![]).unwrap(),
+            "true && false"
+        )
     }
 }

@@ -1,4 +1,4 @@
-use ergotree_ir::mir::atleast::Atleast;
+use ergotree_ir::mir::{atleast::Atleast, expr::Expr};
 
 use crate::{
     error::PseudoCodeError,
@@ -7,9 +7,13 @@ use crate::{
 };
 
 impl PseudoCode for Atleast {
-    fn pseudo_code(&self, ctx: &GeneratorContext) -> Result<String, PseudoCodeError> {
-        let bound_code = self.bound.pseudo_code(ctx)?;
-        let input_code = self.input.pseudo_code(ctx)?;
+    fn pseudo_code<'a>(
+        &'a self,
+        ctx: &mut GeneratorContext,
+        stack: &mut Vec<&'a Expr>,
+    ) -> Result<String, PseudoCodeError> {
+        let bound_code = self.bound.pseudo_code(ctx, stack)?;
+        let input_code = self.input.pseudo_code(ctx, stack)?;
 
         Ok(format!("atLeast({bound_code}, {input_code})"))
     }

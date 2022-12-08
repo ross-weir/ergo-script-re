@@ -1,4 +1,4 @@
-use ergotree_ir::mir::val_use::ValUse;
+use ergotree_ir::mir::{expr::Expr, val_use::ValUse};
 
 use crate::{
     error::PseudoCodeError,
@@ -7,7 +7,11 @@ use crate::{
 };
 
 impl PseudoCode for ValUse {
-    fn pseudo_code(&self, ctx: &GeneratorContext) -> Result<String, PseudoCodeError> {
+    fn pseudo_code<'a>(
+        &'a self,
+        ctx: &mut GeneratorContext,
+        _stack: &mut Vec<&'a Expr>,
+    ) -> Result<String, PseudoCodeError> {
         let code = ctx.dfa.name_for_id(self.val_id.0);
 
         Ok(code)

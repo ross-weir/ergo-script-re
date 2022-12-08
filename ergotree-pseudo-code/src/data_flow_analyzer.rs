@@ -1,4 +1,4 @@
-use std::{collections::HashMap, ops::Index};
+use std::{cell::RefCell, collections::HashMap, ops::Index};
 
 use ergotree_ir::mir::val_def::ValDef;
 
@@ -7,6 +7,7 @@ use crate::visitor::Visitor;
 #[derive(Default)]
 pub struct DataFlowAnalyzer {
     name_map: HashMap<u32, String>,
+    pseudo_vars: RefCell<u32>,
 }
 
 impl DataFlowAnalyzer {
@@ -21,9 +22,16 @@ impl DataFlowAnalyzer {
 
         self.name_map.insert(id, name);
     }
+
+    pub fn new_pseudo_var(&self) -> String {
+        let mut pseudo_vars = self.pseudo_vars.borrow_mut();
+        *pseudo_vars += 1;
+
+        format!("pvar_{}", *pseudo_vars)
+    }
 }
 
-// TODO: we may need to visit func_value as well to get func args
+// TODO: we may need to visit func_value as w   ell to get func args
 impl Visitor for DataFlowAnalyzer {
     fn visit_val_def(&mut self, vd: &ValDef) {
         self.add_var(vd)
