@@ -75,7 +75,11 @@ Pseudo code of the compiled ergo tree:
 
 ---
 
-The below example contains a process that's a bit harder to handle, when the tree is compiled the if statement: `babelTokensBefore = if(SELF.tokens.size > 0){ SELF.tokens(0)._2 }else{ 0L }` is inlined in the binary op: `babelTokensDifference = recreatedBox.tokens(0)._2 - babelTokensBefore` instead of using a `ValDef` IR node so we need to hoist it into a 'pseudo' variable declaration (a var decl that doesn't actually exist, i.e not `ValDef`). Variables prefixed with `val pvar_{n}` are pseudo variables.
+The below example contains a process that's a bit harder to handle, when the tree is compiled the if statement: `babelTokensBefore = if(SELF.tokens.size > 0){ SELF.tokens(0)._2 }else{ 0L }` is inlined in the binary op: `babelTokensDifference = recreatedBox.tokens(0)._2 - babelTokensBefore` instead of using a `ValDef` IR node so we need to hoist it into a 'pseudo' variable declaration (a var decl that doesn't actually exist, i.e not `ValDef`). Variables prefixed with `val pvar_{n}` are pseudo variables, they allow us to continue to produce valid ergo script instead of:
+
+```
+var_1.tokens(0)._2 - if(SELF.tokens.size > 0){ SELF.tokens(0)._2 }else{ 0L }
+```
 
 Original script:
 
