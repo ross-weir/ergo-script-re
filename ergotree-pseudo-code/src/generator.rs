@@ -1,16 +1,40 @@
 use crate::{error::PseudoCodeError, visitor::Element, GeneratorContext, PseudoCode};
-use ergotree_ir::ergo_tree::ErgoTree;
+use ergotree_ir::{ergo_tree::ErgoTree, mir::expr::Expr};
 
 pub struct PseudoCodeGenerator {}
 
 impl PseudoCodeGenerator {
     pub fn generate_for_ergotree(&self, tree: &ErgoTree) -> Result<String, PseudoCodeError> {
         let mut ctx = GeneratorContext::from_tree(tree.clone());
+        let mut stack: Vec<&Expr> = vec![];
         let expr = tree.proposition().unwrap();
 
         // perform data flow analysis by recursively visiting all IR nodes in the tree
         expr.accept(&mut ctx.dfa);
-        expr.pseudo_code(&ctx)
+        let code = expr.pseudo_code(&mut ctx, &mut stack)?;
+
+        self.finalize(&mut ctx, code)
+    }
+
+    fn finalize(
+        &self,
+        ctx: &mut GeneratorContext,
+        code: String,
+    ) -> Result<String, PseudoCodeError> {
+        // if ctx.pseudo_var_decls contains values it means we encountered IR nodes that required
+        // pseudo vars but the ergo tree didn't contain a Block IR node.
+        // wrap the code in { } and write out the var decls
+        if ctx.pseudo_var_decls.len() > 0 {
+            let pseudo_vars = ctx
+                .pseudo_var_decls
+                .drain(..)
+                .collect::<Vec<_>>()
+                .join("\n\t");
+
+            Ok(format!("{{\n\t{pseudo_vars}\n\n\t{code}\n}}"))
+        } else {
+            Ok(code)
+        }
     }
 }
 
@@ -74,6 +98,27 @@ mod tests {
         check_gen(
             "1006040608cd02509a6378da277877eabe7fe56a7157e72ec87697d7ef92574684f3d50e5a21da08cd0367c585c655e6e34b2c0c79cff24a997e60686c9770b6a1f7f8689c993c5340c708cd02924b14b8df230f350970e0b735780b41fd65798c1a5243e3352854a6fc048ca308cd02d84d2e1ca735ce23f224bd43cd43ed67053356713a8a6920965b3bde933648dc08cd0327e65711a59378c59359c3e1d0f7abe906479eccb76094e50fe79d743ccc15e698730083050873017302730373047305",
             "atLeast(3, Coll(SigmaProp(ProofOfKnowledge(ProveDlog(ProveDlog { h: EC:02509a6378da277877eabe7fe56a7157e72ec87697d7ef92574684f3d50e5a21da }))), SigmaProp(ProofOfKnowledge(ProveDlog(ProveDlog { h: EC:0367c585c655e6e34b2c0c79cff24a997e60686c9770b6a1f7f8689c993c5340c7 }))), SigmaProp(ProofOfKnowledge(ProveDlog(ProveDlog { h: EC:02924b14b8df230f350970e0b735780b41fd65798c1a5243e3352854a6fc048ca3 }))), SigmaProp(ProofOfKnowledge(ProveDlog(ProveDlog { h: EC:02d84d2e1ca735ce23f224bd43cd43ed67053356713a8a6920965b3bde933648dc }))), SigmaProp(ProofOfKnowledge(ProveDlog(ProveDlog { h: EC:0327e65711a59378c59359c3e1d0f7abe906479eccb76094e50fe79d743ccc15e6 })))))"
+        )
+    }
+
+    #[test]
+    fn test_inline_if_is_hoisted_to_var_decl_despite_no_block_ir() {
+        // {
+        // val a = if (SELF.value > 1000) { 1000 } else { 1500 }
+
+        // a > 505
+        // }
+
+        let expected = r#"
+{
+       val pvar_1 = if (SELF.value > 1000) { 1000 } else { 1500 }
+
+       pvar_1 > 505
+}
+"#;
+        check_gen_trim(
+            "100405d00f04d00f04b81704f207d1919591c1a77300730173027303",
+            expected,
         )
     }
 
@@ -156,8 +201,15 @@ mod tests {
 
         //         exchangeOK
         // }
-        let expected = r#""#;
+        let expected = r#"
+{
+       val var_1 = OUTPUTS.filter({ (var_1: Box) => (((var_1.propositionBytes == SELF.propositionBytes) && (var_1.R4[SigmaProp].get == SELF.R4[SigmaProp].get)) && (var_1.R5[Long].get == SELF.R5[Long].get)) && (var_1.R6[Coll[Byte]].get == SELF.id) }).getOrElse(0, SELF)
+       val var_2 = SELF.tokens
+       val pvar_1 = if (var_2.size > 0) { var_2(0)._2 } else { 0 }
 
-        check_gen("100504000400040004000500d1d802d601b2b5a5d9010163ededed93c27201c2a793e4c672010408e4c6a7040893e4c672010505e4c6a7050593e4c67201060ec5a7730001a7d602db6308a7929c998cb2db63087201730100029591b1720273028cb27202730300027304e4c6a7050599c1a7c17201", expected)
+       ((var_1.tokens(0)._2 - pvar_1) * SELF.R5[Long].get) >= (SELF.value - var_1.value)
+}"#;
+
+        check_gen_trim("100504000400040004000500d1d802d601b2b5a5d9010163ededed93c27201c2a793e4c672010408e4c6a7040893e4c672010505e4c6a7050593e4c67201060ec5a7730001a7d602db6308a7929c998cb2db63087201730100029591b1720273028cb27202730300027304e4c6a7050599c1a7c17201", expected)
     }
 }

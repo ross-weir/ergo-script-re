@@ -1,4 +1,4 @@
-use ergotree_ir::mir::bool_to_sigma::BoolToSigmaProp;
+use ergotree_ir::mir::{bool_to_sigma::BoolToSigmaProp, expr::Expr};
 
 use crate::{
     error::PseudoCodeError,
@@ -7,8 +7,12 @@ use crate::{
 };
 
 impl PseudoCode for BoolToSigmaProp {
-    fn pseudo_code(&self, ctx: &GeneratorContext) -> Result<String, PseudoCodeError> {
-        self.input.pseudo_code(ctx)
+    fn pseudo_code<'a>(
+        &'a self,
+        ctx: &mut GeneratorContext,
+        stack: &mut Vec<&'a Expr>,
+    ) -> Result<String, PseudoCodeError> {
+        self.input.pseudo_code(ctx, stack)
     }
 }
 
@@ -42,8 +46,11 @@ mod tests {
             input: Box::new(input),
         }
         .into();
-        let ctx = GeneratorContext::from_expr(expr.clone());
+        let mut ctx = GeneratorContext::from_expr(expr.clone());
 
-        assert_eq!(expr.pseudo_code(&ctx).unwrap(), "true && false")
+        assert_eq!(
+            expr.pseudo_code(&mut ctx, &mut vec![]).unwrap(),
+            "true && false"
+        )
     }
 }

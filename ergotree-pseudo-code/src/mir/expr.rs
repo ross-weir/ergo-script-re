@@ -7,58 +7,64 @@ use crate::{
 };
 
 impl PseudoCode for Expr {
-    fn pseudo_code(&self, ctx: &GeneratorContext) -> Result<String, PseudoCodeError> {
-        match self {
+    fn pseudo_code<'a>(
+        &'a self,
+        ctx: &mut GeneratorContext,
+        stack: &mut Vec<&'a Expr>,
+    ) -> Result<String, PseudoCodeError> {
+        stack.push(self);
+
+        let v = match self {
             Expr::Append(_) => todo!(),
-            Expr::Const(e) => e.pseudo_code(ctx),
-            Expr::ConstPlaceholder(e) => e.pseudo_code(ctx),
+            Expr::Const(e) => e.pseudo_code(ctx, stack),
+            Expr::ConstPlaceholder(e) => e.pseudo_code(ctx, stack),
             Expr::SubstConstants(_) => todo!(),
             Expr::ByteArrayToLong(_) => todo!(),
             Expr::ByteArrayToBigInt(_) => todo!(),
             Expr::LongToByteArray(_) => todo!(),
-            Expr::Collection(e) => e.pseudo_code(ctx),
+            Expr::Collection(e) => e.pseudo_code(ctx, stack),
             Expr::Tuple(_) => todo!(),
             Expr::CalcBlake2b256(_) => todo!(),
             Expr::CalcSha256(_) => todo!(),
             Expr::Context => todo!(),
             Expr::Global => todo!(),
-            Expr::GlobalVars(e) => e.pseudo_code(ctx),
-            Expr::FuncValue(e) => e.pseudo_code(ctx),
+            Expr::GlobalVars(e) => e.pseudo_code(ctx, stack),
+            Expr::FuncValue(e) => e.pseudo_code(ctx, stack),
             Expr::Apply(_) => todo!(),
             Expr::MethodCall(_) => todo!(),
-            Expr::ProperyCall(e) => e.pseudo_code(ctx),
-            Expr::BlockValue(e) => e.pseudo_code(ctx),
-            Expr::ValDef(e) => e.pseudo_code(ctx),
-            Expr::ValUse(e) => e.pseudo_code(ctx),
-            Expr::If(e) => e.pseudo_code(ctx),
-            Expr::BinOp(e) => e.pseudo_code(ctx),
+            Expr::ProperyCall(e) => e.pseudo_code(ctx, stack),
+            Expr::BlockValue(e) => e.pseudo_code(ctx, stack),
+            Expr::ValDef(e) => e.pseudo_code(ctx, stack),
+            Expr::ValUse(e) => e.pseudo_code(ctx, stack),
+            Expr::If(e) => e.pseudo_code(ctx, stack),
+            Expr::BinOp(e) => e.pseudo_code(ctx, stack),
             Expr::And(_) => todo!(),
             Expr::Or(_) => todo!(),
             Expr::Xor(_) => todo!(),
-            Expr::Atleast(e) => e.pseudo_code(ctx),
+            Expr::Atleast(e) => e.pseudo_code(ctx, stack),
             Expr::LogicalNot(_) => todo!(),
             Expr::Negation(_) => todo!(),
             Expr::BitInversion(_) => todo!(),
-            Expr::OptionGet(e) => e.pseudo_code(ctx),
+            Expr::OptionGet(e) => e.pseudo_code(ctx, stack),
             Expr::OptionIsDefined(_) => todo!(),
             Expr::OptionGetOrElse(_) => todo!(),
-            Expr::ExtractAmount(e) => e.pseudo_code(ctx),
-            Expr::ExtractRegisterAs(e) => e.pseudo_code(ctx),
+            Expr::ExtractAmount(e) => e.pseudo_code(ctx, stack),
+            Expr::ExtractRegisterAs(e) => e.pseudo_code(ctx, stack),
             Expr::ExtractBytes(_) => todo!(),
             Expr::ExtractBytesWithNoRef(_) => todo!(),
-            Expr::ExtractScriptBytes(e) => e.pseudo_code(ctx),
+            Expr::ExtractScriptBytes(e) => e.pseudo_code(ctx, stack),
             Expr::ExtractCreationInfo(_) => todo!(),
-            Expr::ExtractId(e) => e.pseudo_code(ctx),
-            Expr::ByIndex(e) => e.pseudo_code(ctx),
-            Expr::SizeOf(e) => e.pseudo_code(ctx),
+            Expr::ExtractId(e) => e.pseudo_code(ctx, stack),
+            Expr::ByIndex(e) => e.pseudo_code(ctx, stack),
+            Expr::SizeOf(e) => e.pseudo_code(ctx, stack),
             Expr::Slice(_) => todo!(),
             Expr::Fold(_) => todo!(),
             Expr::Map(_) => todo!(),
-            Expr::Filter(e) => e.pseudo_code(ctx),
+            Expr::Filter(e) => e.pseudo_code(ctx, stack),
             Expr::Exists(_) => todo!(),
             Expr::ForAll(_) => todo!(),
-            Expr::SelectField(e) => e.pseudo_code(ctx),
-            Expr::BoolToSigmaProp(e) => e.pseudo_code(ctx),
+            Expr::SelectField(e) => e.pseudo_code(ctx, stack),
+            Expr::BoolToSigmaProp(e) => e.pseudo_code(ctx, stack),
             Expr::Upcast(_) => todo!(),
             Expr::Downcast(_) => todo!(),
             Expr::CreateProveDlog(_) => todo!(),
@@ -75,7 +81,11 @@ impl PseudoCode for Expr {
             Expr::XorOf(_) => todo!(),
             Expr::TreeLookup(_) => todo!(),
             Expr::CreateAvlTree(_) => todo!(),
-        }
+        };
+
+        stack.pop();
+
+        v
     }
 }
 

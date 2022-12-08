@@ -1,4 +1,4 @@
-use ergotree_ir::mir::global_vars::GlobalVars;
+use ergotree_ir::mir::{expr::Expr, global_vars::GlobalVars};
 
 use crate::{
     error::PseudoCodeError,
@@ -7,7 +7,11 @@ use crate::{
 };
 
 impl PseudoCode for GlobalVars {
-    fn pseudo_code(&self, _ctx: &GeneratorContext) -> Result<String, PseudoCodeError> {
+    fn pseudo_code(
+        &self,
+        _ctx: &mut GeneratorContext,
+        _stack: &mut Vec<&Expr>,
+    ) -> Result<String, PseudoCodeError> {
         let code = match self {
             GlobalVars::Inputs => "INPUTS",
             GlobalVars::Outputs => "OUTPUTS",

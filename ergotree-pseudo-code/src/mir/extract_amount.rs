@@ -1,4 +1,4 @@
-use ergotree_ir::mir::extract_amount::ExtractAmount;
+use ergotree_ir::mir::{expr::Expr, extract_amount::ExtractAmount};
 
 use crate::{
     error::PseudoCodeError,
@@ -7,8 +7,12 @@ use crate::{
 };
 
 impl PseudoCode for ExtractAmount {
-    fn pseudo_code(&self, ctx: &GeneratorContext) -> Result<String, PseudoCodeError> {
-        let input_code = self.input.pseudo_code(ctx)?;
+    fn pseudo_code<'a>(
+        &'a self,
+        ctx: &mut GeneratorContext,
+        stack: &mut Vec<&'a Expr>,
+    ) -> Result<String, PseudoCodeError> {
+        let input_code = self.input.pseudo_code(ctx, stack)?;
 
         Ok(format!("{input_code}.value"))
     }

@@ -1,4 +1,4 @@
-use ergotree_ir::mir::property_call::PropertyCall;
+use ergotree_ir::mir::{expr::Expr, property_call::PropertyCall};
 
 use crate::{
     error::PseudoCodeError,
@@ -7,8 +7,12 @@ use crate::{
 };
 
 impl PseudoCode for PropertyCall {
-    fn pseudo_code(&self, ctx: &GeneratorContext) -> Result<String, PseudoCodeError> {
-        let obj_code = self.obj.pseudo_code(ctx)?;
+    fn pseudo_code<'a>(
+        &'a self,
+        ctx: &mut GeneratorContext,
+        stack: &mut Vec<&'a Expr>,
+    ) -> Result<String, PseudoCodeError> {
+        let obj_code = self.obj.pseudo_code(ctx, stack)?;
         let prop_name = self.method.name();
 
         Ok(format!("{obj_code}.{prop_name}"))

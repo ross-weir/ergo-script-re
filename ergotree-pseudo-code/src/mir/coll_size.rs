@@ -1,4 +1,4 @@
-use ergotree_ir::mir::coll_size::SizeOf;
+use ergotree_ir::mir::{coll_size::SizeOf, expr::Expr};
 
 use crate::{
     error::PseudoCodeError,
@@ -7,8 +7,12 @@ use crate::{
 };
 
 impl PseudoCode for SizeOf {
-    fn pseudo_code(&self, ctx: &GeneratorContext) -> Result<String, PseudoCodeError> {
-        let input_code = self.input.pseudo_code(ctx)?;
+    fn pseudo_code<'a>(
+        &'a self,
+        ctx: &mut GeneratorContext,
+        stack: &mut Vec<&'a Expr>,
+    ) -> Result<String, PseudoCodeError> {
+        let input_code = self.input.pseudo_code(ctx, stack)?;
 
         Ok(format!("{input_code}.size"))
     }
