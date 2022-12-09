@@ -12,24 +12,23 @@ impl PseudoCode for BlockValue {
         ctx: &mut GeneratorContext,
         stack: &mut Vec<&'a Expr>,
     ) -> Result<String, PseudoCodeError> {
-        // TODO: doc why this must come before stmts
-        let result_code = self.result.pseudo_code(ctx, stack)?;
-
         let stmts: Vec<String> = self
             .items
             .iter()
             .map(|e| e.pseudo_code(ctx, stack).unwrap())
             .collect();
+        // result_code can produce pseudo_vars which are written out next
+        let result_code = self.result.pseudo_code(ctx, stack)?;
         let mut pseudo_vars = ctx
             .pseudo_var_decls
             .drain(..)
             .collect::<Vec<_>>()
-            .join("\n\t");
+            .join("\n");
         if pseudo_vars.len() > 0 {
-            pseudo_vars.insert_str(0, "\n\t");
+            pseudo_vars.insert_str(0, "\n");
         }
-        let stmts_code = stmts.join("\n\t");
-        let code = format!("{{\n\t{stmts_code}{pseudo_vars}\n\n\t{result_code}\n}}");
+        let stmts_code = stmts.join("\n");
+        let code = format!("{{\n{stmts_code}{pseudo_vars}\n\n{result_code}\n}}");
 
         Ok(code)
     }

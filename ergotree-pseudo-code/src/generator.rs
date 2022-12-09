@@ -29,9 +29,9 @@ impl PseudoCodeGenerator {
                 .pseudo_var_decls
                 .drain(..)
                 .collect::<Vec<_>>()
-                .join("\n\t");
+                .join("\n");
 
-            Ok(format!("{{\n\t{pseudo_vars}\n\n\t{code}\n}}"))
+            Ok(format!("{{\n{pseudo_vars}\n\n{code}\n}}"))
         } else {
             Ok(code)
         }
