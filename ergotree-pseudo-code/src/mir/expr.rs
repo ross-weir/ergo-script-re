@@ -26,7 +26,7 @@ impl PseudoCode for Expr {
             Expr::Tuple(_) => todo!(),
             Expr::CalcBlake2b256(_) => todo!(),
             Expr::CalcSha256(_) => todo!(),
-            Expr::Context => todo!(),
+            Expr::Context => Ok("CONTEXT".to_string()),
             Expr::Global => todo!(),
             Expr::GlobalVars(e) => e.pseudo_code(ctx, stack),
             Expr::FuncValue(e) => e.pseudo_code(ctx, stack),

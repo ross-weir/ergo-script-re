@@ -212,4 +212,38 @@ mod tests {
 
         check_gen_trim("100504000400040004000500d1d802d601b2b5a5d9010163ededed93c27201c2a793e4c672010408e4c6a7040893e4c672010505e4c6a7050593e4c67201060ec5a7730001a7d602db6308a7929c998cb2db63087201730100029591b1720273028cb27202730300027304e4c6a7050599c1a7c17201", expected)
     }
+
+    #[test]
+    fn test_min_max_pseudo_code() {
+        // {
+        //     val c = OUTPUTS(0).value
+        //     val d = SELF.value
+        //     val a = min(40, c)
+        //     val b = max(20, d)
+
+        //     b > a
+        // }
+        let expected = r#"(max(20,SELF.value)) > (min(40,OUTPUTS(0).value))"#;
+
+        check_gen_trim("1003052805500400d191a27300c1a7a17301c1b2a5730200", expected)
+    }
+
+    #[test]
+    fn test_context_datainputs_pseudo_code() {
+        // {
+        //     CONTEXT.dataInputs(0).tokens(0)._2 > 0
+        // }
+        check_gen(
+            "1003040004000500d1918cb2db6308b2db6501fe730000730100027302",
+            "CONTEXT.dataInputs(0).tokens(0)._2 > 0",
+        )
+    }
+
+    #[test]
+    fn test_script_pseudo_code7() {
+        // https://github.com/ergoplatform/eips/blob/cae50b722d6929c794847d21668500acb01f3c8c/eip-0023/contracts/ballot_contract.es
+        let expected = r#""#;
+
+        check_gen("10070580dac409040204020400040204000e206251655468576d5a7134743777217a25432a462d4a404e635266556a586e3272d803d601b2a5e4e3000400d602c672010407d603e4c6a70407ea02d1ededede6720293c27201c2a793db63087201db6308a792c172017300eb02cd7203d1ededededed91b1a4730191b1db6308b2a47302007303938cb2db6308b2a473040073050001730693e47202720392c17201c1a7efe6c672010561", expected)
+    }
 }

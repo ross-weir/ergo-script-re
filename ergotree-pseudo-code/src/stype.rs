@@ -22,7 +22,7 @@ impl ErgoScript for SType {
             SType::SColl(inner) => format!("Coll[{}]", (*(*inner)).ergo_script()),
             SType::STuple(_) => todo!(),
             SType::SFunc(_) => todo!(),
-            SType::SContext => todo!(),
+            SType::SContext => "Context".to_string(),
             SType::SHeader => todo!(),
             SType::SPreHeader => todo!(),
             SType::SGlobal => todo!(),
